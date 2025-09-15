@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radial Tree</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        svg {
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .node circle {
+            stroke-width: 1.5;
+        }
+
+        .link {
+            fill: none;
+            stroke: #888;
+            stroke-width: 0.8;
+            opacity: 0.6;
+        }
+
+        /* Generation colors */
+        .gen-0 circle { fill: #e74c3c; stroke: #c0392b; }
+        .gen-1 circle { fill: #f39c12; stroke: #d68910; }
+        .gen-2 circle { fill: #27ae60; stroke: #1e8449; }
+        .gen-3 circle { fill: #3498db; stroke: #2980b9; }
+        .gen-4 circle { fill: #9b59b6; stroke: #7d3c98; }
+        .gen-5 circle { fill: #e67e22; stroke: #d35400; }
+    </style>
+</head>
+<body>
+    <svg width="700" height="700" id="tree-svg"></svg>
+
+    <script>
+        // Complete tree data - all 6 generations
+        const data = {
+            name: "start", gen: 0,
+            children: [
+                {
+                    name: "jack", gen: 1,
+                    children: [
+                        { 
+                            name: "noah", gen: 2,
+                            children: [
+                                { name: "n1", gen: 3, children: [
+                                    { name: "n1a", gen: 4, children: [
+                                        { name: "n1a1", gen: 5 }, { name: "n1a2", gen: 5 }, { name: "n1a3", gen: 5 }
+                                    ]}, 
+                                    { name: "n1b", gen: 4, children: [
+                                        { name: "n1b1", gen: 5 }, { name: "n1b2", gen: 5 }, { name: "n1b3", gen: 5 }
+                                    ]}, 
+                                    { name: "n1c", gen: 4, children: [
+                                        { name: "n1c1", gen: 5 }, { name: "n1c2", gen: 5 }, { name: "n1c3", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "n2", gen: 3, children: [
+                                    { name: "n2a", gen: 4, children: [
+                                        { name: "n2a1", gen: 5 }, { name: "n2a2", gen: 5 }, { name: "n2a3", gen: 5 }
+                                    ]}, 
+                                    { name: "n2b", gen: 4, children: [
+                                        { name: "n2b1", gen: 5 }, { name: "n2b2", gen: 5 }, { name: "n2b3", gen: 5 }
+                                    ]}, 
+                                    { name: "n2c", gen: 4, children: [
+                                        { name: "n2c1", gen: 5 }, { name: "n2c2", gen: 5 }, { name: "n2c3", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "n3", gen: 3, children: [
+                                    { name: "n3a", gen: 4, children: [
+                                        { name: "n3a1", gen: 5 }, { name: "n3a2", gen: 5 }, { name: "n3a3", gen: 5 }
+                                    ]}, 
+                                    { name: "n3b", gen: 4, children: [
+                                        { name: "n3b1", gen: 5 }, { name: "n3b2", gen: 5 }, { name: "n3b3", gen: 5 }
+                                    ]}, 
+                                    { name: "n3c", gen: 4, children: [
+                                        { name: "n3c1", gen: 5 }, { name: "n3c2", gen: 5 }, { name: "n3c3", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "edgar", gen: 2,
+                            children: [
+                                { name: "daanah", gen: 3, children: [
+                                    { name: "d1", gen: 4, children: [
+                                        { name: "d1x", gen: 5 }, { name: "d1y", gen: 5 }, { name: "d1z", gen: 5 }
+                                    ]}, 
+                                    { name: "d2", gen: 4, children: [
+                                        { name: "d2x", gen: 5 }, { name: "d2y", gen: 5 }, { name: "d2z", gen: 5 }
+                                    ]}, 
+                                    { name: "d3", gen: 4, children: [
+                                        { name: "d3x", gen: 5 }, { name: "d3y", gen: 5 }, { name: "d3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "matthew", gen: 3, children: [
+                                    { name: "m1", gen: 4, children: [
+                                        { name: "m1x", gen: 5 }, { name: "m1y", gen: 5 }, { name: "m1z", gen: 5 }
+                                    ]}, 
+                                    { name: "m2", gen: 4, children: [
+                                        { name: "m2x", gen: 5 }, { name: "m2y", gen: 5 }, { name: "m2z", gen: 5 }
+                                    ]}, 
+                                    { name: "m3", gen: 4, children: [
+                                        { name: "m3x", gen: 5 }, { name: "m3y", gen: 5 }, { name: "m3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "e3", gen: 3, children: [
+                                    { name: "e1", gen: 4, children: [
+                                        { name: "e1x", gen: 5 }, { name: "e1y", gen: 5 }, { name: "e1z", gen: 5 }
+                                    ]}, 
+                                    { name: "e2", gen: 4, children: [
+                                        { name: "e2x", gen: 5 }, { name: "e2y", gen: 5 }, { name: "e2z", gen: 5 }
+                                    ]}, 
+                                    { name: "e3", gen: 4, children: [
+                                        { name: "e3x", gen: 5 }, { name: "e3y", gen: 5 }, { name: "e3z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "james", gen: 2,
+                            children: [
+                                { name: "bj", gen: 3, children: [
+                                    { name: "b1", gen: 4, children: [
+                                        { name: "b1x", gen: 5 }, { name: "b1y", gen: 5 }, { name: "b1z", gen: 5 }
+                                    ]}, 
+                                    { name: "b2", gen: 4, children: [
+                                        { name: "b2x", gen: 5 }, { name: "b2y", gen: 5 }, { name: "b2z", gen: 5 }
+                                    ]}, 
+                                    { name: "b3", gen: 4, children: [
+                                        { name: "b3x", gen: 5 }, { name: "b3y", gen: 5 }, { name: "b3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "heik", gen: 3, children: [
+                                    { name: "h1", gen: 4, children: [
+                                        { name: "h1x", gen: 5 }, { name: "h1y", gen: 5 }, { name: "h1z", gen: 5 }
+                                    ]}, 
+                                    { name: "h2", gen: 4, children: [
+                                        { name: "h2x", gen: 5 }, { name: "h2y", gen: 5 }, { name: "h2z", gen: 5 }
+                                    ]}, 
+                                    { name: "h3", gen: 4, children: [
+                                        { name: "h3x", gen: 5 }, { name: "h3y", gen: 5 }, { name: "h3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "j3", gen: 3, children: [
+                                    { name: "j1", gen: 4, children: [
+                                        { name: "j1x", gen: 5 }, { name: "j1y", gen: 5 }, { name: "j1z", gen: 5 }
+                                    ]}, 
+                                    { name: "j2", gen: 4, children: [
+                                        { name: "j2x", gen: 5 }, { name: "j2y", gen: 5 }, { name: "j2z", gen: 5 }
+                                    ]}, 
+                                    { name: "j3", gen: 4, children: [
+                                        { name: "j3x", gen: 5 }, { name: "j3y", gen: 5 }, { name: "j3z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "nathan", gen: 1,
+                    children: [
+                        { 
+                            name: "na", gen: 2,
+                            children: [
+                                { name: "na1", gen: 3, children: [
+                                    { name: "a1", gen: 4, children: [
+                                        { name: "a1x", gen: 5 }, { name: "a1y", gen: 5 }, { name: "a1z", gen: 5 }
+                                    ]}, 
+                                    { name: "a2", gen: 4, children: [
+                                        { name: "a2x", gen: 5 }, { name: "a2y", gen: 5 }, { name: "a2z", gen: 5 }
+                                    ]}, 
+                                    { name: "a3", gen: 4, children: [
+                                        { name: "a3x", gen: 5 }, { name: "a3y", gen: 5 }, { name: "a3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "na2", gen: 3, children: [
+                                    { name: "a4", gen: 4, children: [
+                                        { name: "a4x", gen: 5 }, { name: "a4y", gen: 5 }, { name: "a4z", gen: 5 }
+                                    ]}, 
+                                    { name: "a5", gen: 4, children: [
+                                        { name: "a5x", gen: 5 }, { name: "a5y", gen: 5 }, { name: "a5z", gen: 5 }
+                                    ]}, 
+                                    { name: "a6", gen: 4, children: [
+                                        { name: "a6x", gen: 5 }, { name: "a6y", gen: 5 }, { name: "a6z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "na3", gen: 3, children: [
+                                    { name: "a7", gen: 4, children: [
+                                        { name: "a7x", gen: 5 }, { name: "a7y", gen: 5 }, { name: "a7z", gen: 5 }
+                                    ]}, 
+                                    { name: "a8", gen: 4, children: [
+                                        { name: "a8x", gen: 5 }, { name: "a8y", gen: 5 }, { name: "a8z", gen: 5 }
+                                    ]}, 
+                                    { name: "a9", gen: 4, children: [
+                                        { name: "a9x", gen: 5 }, { name: "a9y", gen: 5 }, { name: "a9z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "nb", gen: 2,
+                            children: [
+                                { name: "nb1", gen: 3, children: [
+                                    { name: "b4", gen: 4, children: [
+                                        { name: "b4x", gen: 5 }, { name: "b4y", gen: 5 }, { name: "b4z", gen: 5 }
+                                    ]}, 
+                                    { name: "b5", gen: 4, children: [
+                                        { name: "b5x", gen: 5 }, { name: "b5y", gen: 5 }, { name: "b5z", gen: 5 }
+                                    ]}, 
+                                    { name: "b6", gen: 4, children: [
+                                        { name: "b6x", gen: 5 }, { name: "b6y", gen: 5 }, { name: "b6z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "nb2", gen: 3, children: [
+                                    { name: "b7", gen: 4, children: [
+                                        { name: "b7x", gen: 5 }, { name: "b7y", gen: 5 }, { name: "b7z", gen: 5 }
+                                    ]}, 
+                                    { name: "b8", gen: 4, children: [
+                                        { name: "b8x", gen: 5 }, { name: "b8y", gen: 5 }, { name: "b8z", gen: 5 }
+                                    ]}, 
+                                    { name: "b9", gen: 4, children: [
+                                        { name: "b9x", gen: 5 }, { name: "b9y", gen: 5 }, { name: "b9z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "nb3", gen: 3, children: [
+                                    { name: "b10", gen: 4, children: [
+                                        { name: "b10x", gen: 5 }, { name: "b10y", gen: 5 }, { name: "b10z", gen: 5 }
+                                    ]}, 
+                                    { name: "b11", gen: 4, children: [
+                                        { name: "b11x", gen: 5 }, { name: "b11y", gen: 5 }, { name: "b11z", gen: 5 }
+                                    ]}, 
+                                    { name: "b12", gen: 4, children: [
+                                        { name: "b12x", gen: 5 }, { name: "b12y", gen: 5 }, { name: "b12z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "nc", gen: 2,
+                            children: [
+                                { name: "nc1", gen: 3, children: [
+                                    { name: "c1", gen: 4, children: [
+                                        { name: "c1x", gen: 5 }, { name: "c1y", gen: 5 }, { name: "c1z", gen: 5 }
+                                    ]}, 
+                                    { name: "c2", gen: 4, children: [
+                                        { name: "c2x", gen: 5 }, { name: "c2y", gen: 5 }, { name: "c2z", gen: 5 }
+                                    ]}, 
+                                    { name: "c3", gen: 4, children: [
+                                        { name: "c3x", gen: 5 }, { name: "c3y", gen: 5 }, { name: "c3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "nc2", gen: 3, children: [
+                                    { name: "c4", gen: 4, children: [
+                                        { name: "c4x", gen: 5 }, { name: "c4y", gen: 5 }, { name: "c4z", gen: 5 }
+                                    ]}, 
+                                    { name: "c5", gen: 4, children: [
+                                        { name: "c5x", gen: 5 }, { name: "c5y", gen: 5 }, { name: "c5z", gen: 5 }
+                                    ]}, 
+                                    { name: "c6", gen: 4, children: [
+                                        { name: "c6x", gen: 5 }, { name: "c6y", gen: 5 }, { name: "c6z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "nc3", gen: 3, children: [
+                                    { name: "c7", gen: 4, children: [
+                                        { name: "c7x", gen: 5 }, { name: "c7y", gen: 5 }, { name: "c7z", gen: 5 }
+                                    ]}, 
+                                    { name: "c8", gen: 4, children: [
+                                        { name: "c8x", gen: 5 }, { name: "c8y", gen: 5 }, { name: "c8z", gen: 5 }
+                                    ]}, 
+                                    { name: "c9", gen: 4, children: [
+                                        { name: "c9x", gen: 5 }, { name: "c9y", gen: 5 }, { name: "c9z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "lanny", gen: 1,
+                    children: [
+                        { 
+                            name: "la", gen: 2,
+                            children: [
+                                { name: "la1", gen: 3, children: [
+                                    { name: "l1", gen: 4, children: [
+                                        { name: "l1x", gen: 5 }, { name: "l1y", gen: 5 }, { name: "l1z", gen: 5 }
+                                    ]}, 
+                                    { name: "l2", gen: 4, children: [
+                                        { name: "l2x", gen: 5 }, { name: "l2y", gen: 5 }, { name: "l2z", gen: 5 }
+                                    ]}, 
+                                    { name: "l3", gen: 4, children: [
+                                        { name: "l3x", gen: 5 }, { name: "l3y", gen: 5 }, { name: "l3z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "la2", gen: 3, children: [
+                                    { name: "l4", gen: 4, children: [
+                                        { name: "l4x", gen: 5 }, { name: "l4y", gen: 5 }, { name: "l4z", gen: 5 }
+                                    ]}, 
+                                    { name: "l5", gen: 4, children: [
+                                        { name: "l5x", gen: 5 }, { name: "l5y", gen: 5 }, { name: "l5z", gen: 5 }
+                                    ]}, 
+                                    { name: "l6", gen: 4, children: [
+                                        { name: "l6x", gen: 5 }, { name: "l6y", gen: 5 }, { name: "l6z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "la3", gen: 3, children: [
+                                    { name: "l7", gen: 4, children: [
+                                        { name: "l7x", gen: 5 }, { name: "l7y", gen: 5 }, { name: "l7z", gen: 5 }
+                                    ]}, 
+                                    { name: "l8", gen: 4, children: [
+                                        { name: "l8x", gen: 5 }, { name: "l8y", gen: 5 }, { name: "l8z", gen: 5 }
+                                    ]}, 
+                                    { name: "l9", gen: 4, children: [
+                                        { name: "l9x", gen: 5 }, { name: "l9y", gen: 5 }, { name: "l9z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "lb", gen: 2,
+                            children: [
+                                { name: "lb1", gen: 3, children: [
+                                    { name: "l10", gen: 4, children: [
+                                        { name: "l10x", gen: 5 }, { name: "l10y", gen: 5 }, { name: "l10z", gen: 5 }
+                                    ]}, 
+                                    { name: "l11", gen: 4, children: [
+                                        { name: "l11x", gen: 5 }, { name: "l11y", gen: 5 }, { name: "l11z", gen: 5 }
+                                    ]}, 
+                                    { name: "l12", gen: 4, children: [
+                                        { name: "l12x", gen: 5 }, { name: "l12y", gen: 5 }, { name: "l12z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "lb2", gen: 3, children: [
+                                    { name: "l13", gen: 4, children: [
+                                        { name: "l13x", gen: 5 }, { name: "l13y", gen: 5 }, { name: "l13z", gen: 5 }
+                                    ]}, 
+                                    { name: "l14", gen: 4, children: [
+                                        { name: "l14x", gen: 5 }, { name: "l14y", gen: 5 }, { name: "l14z", gen: 5 }
+                                    ]}, 
+                                    { name: "l15", gen: 4, children: [
+                                        { name: "l15x", gen: 5 }, { name: "l15y", gen: 5 }, { name: "l15z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "lb3", gen: 3, children: [
+                                    { name: "l16", gen: 4, children: [
+                                        { name: "l16x", gen: 5 }, { name: "l16y", gen: 5 }, { name: "l16z", gen: 5 }
+                                    ]}, 
+                                    { name: "l17", gen: 4, children: [
+                                        { name: "l17x", gen: 5 }, { name: "l17y", gen: 5 }, { name: "l17z", gen: 5 }
+                                    ]}, 
+                                    { name: "l18", gen: 4, children: [
+                                        { name: "l18x", gen: 5 }, { name: "l18y", gen: 5 }, { name: "l18z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        },
+                        { 
+                            name: "lc", gen: 2,
+                            children: [
+                                { name: "lc1", gen: 3, children: [
+                                    { name: "l19", gen: 4, children: [
+                                        { name: "l19x", gen: 5 }, { name: "l19y", gen: 5 }, { name: "l19z", gen: 5 }
+                                    ]}, 
+                                    { name: "l20", gen: 4, children: [
+                                        { name: "l20x", gen: 5 }, { name: "l20y", gen: 5 }, { name: "l20z", gen: 5 }
+                                    ]}, 
+                                    { name: "l21", gen: 4, children: [
+                                        { name: "l21x", gen: 5 }, { name: "l21y", gen: 5 }, { name: "l21z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "lc2", gen: 3, children: [
+                                    { name: "l22", gen: 4, children: [
+                                        { name: "l22x", gen: 5 }, { name: "l22y", gen: 5 }, { name: "l22z", gen: 5 }
+                                    ]}, 
+                                    { name: "l23", gen: 4, children: [
+                                        { name: "l23x", gen: 5 }, { name: "l23y", gen: 5 }, { name: "l23z", gen: 5 }
+                                    ]}, 
+                                    { name: "l24", gen: 4, children: [
+                                        { name: "l24x", gen: 5 }, { name: "l24y", gen: 5 }, { name: "l24z", gen: 5 }
+                                    ]}
+                                ]},
+                                { name: "lc3", gen: 3, children: [
+                                    { name: "l25", gen: 4, children: [
+                                        { name: "l25x", gen: 5 }, { name: "l25y", gen: 5 }, { name: "l25z", gen: 5 }
+                                    ]}, 
+                                    { name: "l26", gen: 4, children: [
+                                        { name: "l26x", gen: 5 }, { name: "l26y", gen: 5 }, { name: "l26z", gen: 5 }
+                                    ]}, 
+                                    { name: "l27", gen: 4, children: [
+                                        { name: "l27x", gen: 5 }, { name: "l27y", gen: 5 }, { name: "l27z", gen: 5 }
+                                    ]}
+                                ]}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Setup
+        const svg = document.getElementById('tree-svg');
+        const width = 700;
+        const height = 700;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const nodes = [];
+        const links = [];
+
+        function processNode(node, parent = null, angle = 0, radius = 0, angleSpan = 2 * Math.PI) {
+            const nodeData = { ...node, x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+            nodes.push(nodeData);
+
+            if (parent) links.push({ source: parent, target: nodeData });
+
+            if (node.children) {
+                const childAngleSpan = angleSpan / node.children.length;
+                const startAngle = angle - angleSpan / 2 + childAngleSpan / 2;
+                const childRadius = radius + (60 + node.gen * 10);
+
+                node.children.forEach((child, i) => {
+                    const childAngle = startAngle + i * childAngleSpan;
+                    processNode(child, nodeData, childAngle, childRadius, childAngleSpan);
+                });
+            }
+        }
+
+        // Create SVG group
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('transform', `translate(${centerX},${centerY})`);
+        svg.appendChild(g);
+
+        // Process tree
+        processNode(data);
+
+        // Draw links
+        links.forEach(link => {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'link');
+            line.setAttribute('x1', link.source.x);
+            line.setAttribute('y1', link.source.y);
+            line.setAttribute('x2', link.target.x);
+            line.setAttribute('y2', link.target.y);
+            g.appendChild(line);
+        });
+
+        // Draw nodes
+        nodes.forEach(node => {
+            const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            nodeGroup.setAttribute('class', `node gen-${node.gen}`);
+            nodeGroup.setAttribute('transform', `translate(${node.x},${node.y})`);
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            const radius = node.gen === 0 ? 6 : (node.gen === 5 ? 1.5 : node.gen === 4 ? 2 : node.gen <= 2 ? 4 : 3);
+            circle.setAttribute('r', radius);
+            nodeGroup.appendChild(circle);
+
+            g.appendChild(nodeGroup);
+        });
+    </script>
+</body>
+</html>
