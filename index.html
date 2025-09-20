@@ -13,12 +13,69 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
         }
 
         svg {
             border-radius: 8px;
             background: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: grab;
+        }
+
+        svg:active {
+            cursor: grabbing;
+        }
+
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .zoom-btn {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .reset-btn {
+            width: 60px;
+            height: 30px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #f0f0f0;
         }
 
         .node circle {
@@ -39,10 +96,34 @@
         .gen-3 circle { fill: #3498db; stroke: #2980b9; }
         .gen-4 circle { fill: #9b59b6; stroke: #7d3c98; }
         .gen-5 circle { fill: #e67e22; stroke: #d35400; }
+
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
-    <svg width="700" height="700" id="tree-svg"></svg>
+    <div class="container">
+        <svg width="700" height="700" id="tree-svg"></svg>
+        
+        <div class="controls">
+            <button class="zoom-btn" id="zoom-in">+</button>
+            <button class="zoom-btn" id="zoom-out">−</button>
+            <button class="reset-btn" id="reset">Reset</button>
+        </div>
+
+        <div class="instructions">
+            Mouse wheel: Zoom | Drag: Pan | Buttons: Zoom/Reset
+        </div>
+    </div>
 
     <script>
         // Complete tree data - all 6 generations
@@ -416,59 +497,6 @@
         const centerX = width / 2;
         const centerY = height / 2;
 
-        const nodes = [];
-        const links = [];
-
-        function processNode(node, parent = null, angle = 0, radius = 0, angleSpan = 2 * Math.PI) {
-            const nodeData = { ...node, x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
-            nodes.push(nodeData);
-
-            if (parent) links.push({ source: parent, target: nodeData });
-
-            if (node.children) {
-                const childAngleSpan = angleSpan / node.children.length;
-                const startAngle = angle - angleSpan / 2 + childAngleSpan / 2;
-                const childRadius = radius + (60 + node.gen * 10);
-
-                node.children.forEach((child, i) => {
-                    const childAngle = startAngle + i * childAngleSpan;
-                    processNode(child, nodeData, childAngle, childRadius, childAngleSpan);
-                });
-            }
-        }
-
-        // Create SVG group
-        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        g.setAttribute('transform', `translate(${centerX},${centerY})`);
-        svg.appendChild(g);
-
-        // Process tree
-        processNode(data);
-
-        // Draw links
-        links.forEach(link => {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('class', 'link');
-            line.setAttribute('x1', link.source.x);
-            line.setAttribute('y1', link.source.y);
-            line.setAttribute('x2', link.target.x);
-            line.setAttribute('y2', link.target.y);
-            g.appendChild(line);
-        });
-
-        // Draw nodes
-        nodes.forEach(node => {
-            const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            nodeGroup.setAttribute('class', `node gen-${node.gen}`);
-            nodeGroup.setAttribute('transform', `translate(${node.x},${node.y})`);
-
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            const radius = node.gen === 0 ? 6 : (node.gen === 5 ? 1.5 : node.gen === 4 ? 2 : node.gen <= 2 ? 4 : 3);
-            circle.setAttribute('r', radius);
-            nodeGroup.appendChild(circle);
-
-            g.appendChild(nodeGroup);
-        });
-    </script>
-</body>
-</html>
+        // Zoom and pan state
+        let currentScale = 1;
+        let currentTranslateX = centerX;
